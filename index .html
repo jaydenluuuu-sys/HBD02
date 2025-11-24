@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>涵涵的生日驚喜</title>
+    <!-- 引入 Tailwind CSS 進行排版 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* 自定義動畫效果 */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        @keyframes pulse-slow {
+            0%, 100% { opacity: 0.4; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .animate-pulse-slow { animation: pulse-slow 4s ease-in-out infinite; }
+        
+        /* 翻牌效果 */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+
+        .card-inner {
+            transition: transform 0.6s;
+        }
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        /* 震動動畫 (錯誤時) */
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* 隱藏滾動條但保留功能 */
+        body { -ms-overflow-style: none; scrollbar-width: none; }
+        body::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body class="bg-pink-50 text-slate-800 font-sans min-h-screen overflow-hidden relative selection:bg-pink-200">
+
+    <!-- 背景裝飾 -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-10 left-10 text-pink-200 animate-pulse-slow">
+            <svg width="50" height="50" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
+        <div class="absolute bottom-20 right-10 text-pink-300 animate-float" style="animation-delay: 1s;">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        </div>
+        <div class="absolute top-1/2 left-1/4 text-red-100 animate-float" style="animation-delay: 2s;">
+            <svg width="80" height="80" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </div>
+    </div>
+
+    <!-- 主內容區 -->
+    <div class="relative z-10 max-w-md mx-auto min-h-screen flex flex-col items-center justify-center p-6" id="app-container">
+        
+        <!-- Stage 0: 歡迎頁面 -->
+        <div id="stage-0" class="text-center space-y-8 w-full transition-all duration-500">
+            <div class="relative inline-block">
+                <div class="absolute inset-0 bg-pink-200 rounded-full blur-xl opacity-50 animate-pulse"></div>
+                <div class="relative bg-white p-6 rounded-full shadow-xl inline-flex">
+                    <!-- Gift Icon -->
+                    <svg class="w-16 h-16 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12a8 8 0 11-16 0 8 8 0 0116 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4"/></svg>
+                    <svg class="w-16 h-16 text-pink-500 absolute" style="opacity: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+                    <!-- Simple Gift SVG -->
+                    <svg class="w-16 h-16 text-pink-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"></polyline><rect x="2" y="7" width="20" height="5"></rect><line x1="12" y1="22" x2="12" y2="7"></line><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path></svg>
+                </div>
+            </div>
+            
+            <div>
+                <h1 class="text-3xl font-bold text-pink-600 mb-2">生日快樂！</h1>
+                <p class="text-slate-500">這是一個專屬於妳的闖關遊戲</p>
+                <p class="text-slate-400 text-sm mt-1">通關後有神秘小禮物喔❤️</p>
+            </div>
+
+            <button onclick="nextStage()" class="bg-gradient-to-r from-pink-500 to-rose-500 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-pink-300/50 hover:scale-105 transition-transform flex items-center gap-2 mx-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                開始挑戰
+            </button>
+        </div>
+
+        <!-- Stage 1: 問答 -->
+        <div id="stage-1" class="hidden w-full bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-pink-100">
+            <div class="mb-6">
+                <span class="bg-pink-100 text-pink-600 text-xs font-bold px-2 py-1 rounded-md" id="quiz-counter">Q1</span>
+                <h2 class="text-xl font-bold text-slate-700 mt-2" id="quiz-question">題目載入中...</h2>
+            </div>
+            <div class="space-y-3" id="quiz-options">
+                <!-- 選項會由 JS 生成 -->
+            </div>
+            <p id="quiz-feedback" class="text-center text-red-400 text-sm mt-4 hidden">再想一下喔～涵涵 😘</p>
+        </div>
+
+        <!-- Stage 2: 密碼鎖 -->
+        <div id="stage-2" class="hidden w-full flex flex-col items-center">
+            <div class="mb-8 text-center">
+                <div class="bg-pink-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 text-pink-500">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-700">解鎖你的心</h2>
+                <p class="text-slate-400 text-sm mt-1">提示：妳最特別的日子 (4碼)</p>
+            </div>
+
+            <div class="flex gap-4 mb-8" id="passcode-display">
+                <div class="w-12 h-14 border-b-4 border-pink-300 text-pink-600 text-3xl flex items-center justify-center opacity-30 transition-all"></div>
+                <div class="w-12 h-14 border-b-4 border-pink-300 text-pink-600 text-3xl flex items-center justify-center opacity-30 transition-all"></div>
+                <div class="w-12 h-14 border-b-4 border-pink-300 text-pink-600 text-3xl flex items-center justify-center opacity-30 transition-all"></div>
+                <div class="w-12 h-14 border-b-4 border-pink-300 text-pink-600 text-3xl flex items-center justify-center opacity-30 transition-all"></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-4 w-full max-w-[280px]">
+                <!-- 數字鍵盤 -->
+                <button onclick="addPasscode(1)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">1</button>
+                <button onclick="addPasscode(2)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">2</button>
+                <button onclick="addPasscode(3)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">3</button>
+                <button onclick="addPasscode(4)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">4</button>
+                <button onclick="addPasscode(5)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">5</button>
+                <button onclick="addPasscode(6)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">6</button>
+                <button onclick="addPasscode(7)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">7</button>
+                <button onclick="addPasscode(8)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">8</button>
+                <button onclick="addPasscode(9)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">9</button>
+                <div class="h-16"></div>
+                <button onclick="addPasscode(0)" class="h-16 rounded-full bg-white shadow-sm border border-pink-50 text-xl font-semibold text-pink-500 active:scale-95 transition-transform">0</button>
+                <button onclick="deletePasscode()" class="h-16 flex items-center justify-center text-slate-400 active:scale-95">⌫</button>
+            </div>
+            <p id="passcode-error" class="mt-4 text-red-500 font-medium hidden">密碼錯誤，是生日喔！</p>
+        </div>
+
+        <!-- Stage 3: 記憶翻牌 -->
+        <div id="stage-3" class="hidden w-full text-center">
+            <h2 class="text-xl font-bold text-slate-700 mb-2">愛的記憶</h2>
+            <p class="text-slate-400 text-sm mb-6">找出所有相同的圖案</p>
+            <div class="grid grid-cols-4 gap-3 perspective-1000" id="memory-grid">
+                <!-- 卡片由 JS 生成 -->
+            </div>
+        </div>
+
+        <!-- Stage 4: 慶祝 -->
+        <div id="stage-4" class="hidden w-full max-w-md text-center">
+            <div class="bg-white/90 backdrop-blur-md p-8 rounded-2xl shadow-2xl border-4 border-pink-200 relative overflow-hidden">
+                 <!-- 裝飾 -->
+                 <div class="absolute top-0 right-0 -mr-8 -mt-8 w-24 h-24 bg-red-400 rotate-45 opacity-20"></div>
+                
+                 <div class="mb-6 relative inline-block">
+                     <div class="absolute inset-0 bg-yellow-200 rounded-full blur-xl opacity-60"></div>
+                     <svg class="w-16 h-16 text-pink-500 relative z-10 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h12z"/></svg>
+                 </div>
+ 
+                 <h1 class="text-2xl font-bold text-slate-800 mb-2" id="letter-title">給最愛的涵涵</h1>
+                 <div class="h-1 w-20 bg-pink-300 mx-auto rounded-full mb-6"></div>
+ 
+                 <div class="text-left text-slate-600 leading-relaxed font-medium bg-pink-50 p-6 rounded-xl border border-pink-100 mb-8" id="letter-content">
+                     <!-- 信件內容 -->
+                 </div>
+ 
+                 <div class="flex justify-center gap-2 text-2xl">
+                    <span class="animate-pulse">❤️</span>
+                    <span class="animate-pulse" style="animation-delay: 0.2s">🎂</span>
+                    <span class="animate-pulse" style="animation-delay: 0.4s">🎁</span>
+                 </div>
+            </div>
+        </div>
+
+        <!-- 頁尾進度條 -->
+        <div id="progress-bar-container" class="absolute bottom-6 w-full max-w-md px-10 hidden">
+            <div class="h-2 bg-pink-100 rounded-full overflow-hidden">
+                <div id="progress-fill" class="h-full bg-pink-500 transition-all duration-500 ease-out" style="width: 0%"></div>
+            </div>
+            <p id="progress-text" class="text-center text-pink-300 text-xs mt-2">Level 1 / 3</p>
+        </div>
+
+        <!-- 禮花容器 -->
+        <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 hidden"></div>
+    </div>
+
+    <script>
+        // --- 遊戲資料設定 (請在此修改) ---
+        
+        const QUIZ_DATA = [
+            {
+                question: "我們第一次見面那天做了甚麼？",
+                options: ["喝咖啡", "吃火鍋", "祐祐跑去拉肚子", "以上皆是"],
+                answer: "以上皆是"
+            },
+            {
+                question: "我們在一起的這段時間總共看了幾場電影?",
+                options: ["1", "2", "3", "4"],
+                answer: "2"
+            },
+            {
+                question: "祐祐曾買了今年最貴手燈(含電池)，號稱手燈台積電，請問價格多少錢?",
+                options: ["1920", "1930", "1940", "1950"],
+                answer: "1940"
+            },
+            {
+                question: "我們第二次見面是去哪裡吃晚餐?",
+                options: ["桃園", "新北", "台北", "以上皆非"],
+                answer: "台北"
+            },
+            
+            {
+                question: "金希澈最近最常玩的遊戲",
+                options: ["LOL英雄聯盟", "幻塔2", "鬥陣特攻", "永恆之塔2"],
+                answer: "永恆之塔2"
+            },
+
+
+        ];
+
+        const SECRET_CODE = "1125"; 
+
+        const FINAL_LETTER_TITLE = "Dear涵涵";
+        const FINAL_LETTER_CONTENT = `
+            涵涵，生日快樂！<br/><br/>
+            這是我在生日這天準備的小小驚喜。<br/>
+            很謝謝當初下載SOGA的自己，<br/>
+            遇到了一位多才多藝且很真誠的女友。<br/><br/>
+            希望未來的每一個重要節日，<br/>
+            我都能帶給妳許多驚喜。<br/><br/>
+            也知道你有時候會很忙，<br/>
+            希望你可以多多休息，我們再一起出去玩喔。<br/><br/>
+            愛妳的祐祐
+        `;
+
+        // --- 遊戲邏輯 (一般不需要修改) ---
+
+        let currentStage = 0;
+        let currentQuizIndex = 0;
+        let passcode = "";
+        let memoryCards = [];
+        let flippedCards = [];
+        let lockBoard = false;
+
+        // 初始化
+        window.onload = () => {
+            document.getElementById('letter-title').innerText = FINAL_LETTER_TITLE;
+            document.getElementById('letter-content').innerHTML = FINAL_LETTER_CONTENT;
+        };
+
+        function nextStage() {
+            // 隱藏當前 Stage
+            document.getElementById(`stage-${currentStage}`).classList.add('hidden');
+            
+            currentStage++;
+            
+            // 顯示下一個 Stage
+            const nextEl = document.getElementById(`stage-${currentStage}`);
+            if (nextEl) {
+                nextEl.classList.remove('hidden');
+                // 動畫效果
+                nextEl.classList.add('animate-float'); // 簡單重置動畫
+                setTimeout(() => nextEl.classList.remove('animate-float'), 500);
+            }
+
+            // 處理進度條
+            const progressContainer = document.getElementById('progress-bar-container');
+            if (currentStage > 0 && currentStage < 4) {
+                progressContainer.classList.remove('hidden');
+                document.getElementById('progress-fill').style.width = `${(currentStage / 3) * 100}%`;
+                document.getElementById('progress-text').innerText = `Level ${currentStage} / 3`;
+            } else {
+                progressContainer.classList.add('hidden');
+            }
+
+            // Stage 初始化邏輯
+            if (currentStage === 1) initQuiz();
+            if (currentStage === 3) initMemoryGame();
+            if (currentStage === 4) startConfetti();
+        }
+
+        // --- Stage 1: Quiz ---
+        function initQuiz() {
+            currentQuizIndex = 0;
+            renderQuiz();
+        }
+
+        function renderQuiz() {
+            const data = QUIZ_DATA[currentQuizIndex];
+            document.getElementById('quiz-counter').innerText = `Q${currentQuizIndex + 1}`;
+            document.getElementById('quiz-question').innerText = data.question;
+            
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            data.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full p-4 rounded-xl text-left transition-all border-2 border-slate-100 hover:border-pink-300 text-slate-600 bg-white flex justify-between items-center";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(btn, opt, data.answer);
+                optionsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback').classList.add('hidden');
+        }
+
+        function checkAnswer(btn, selected, correct) {
+            const allBtns = document.getElementById('quiz-options').children;
+            for(let b of allBtns) b.disabled = true;
+
+            if (selected === correct) {
+                btn.classList.remove('border-slate-100');
+                btn.classList.add('bg-green-50', 'border-green-500', 'text-green-700');
+                btn.innerHTML += ' <span>✓</span>';
+                
+                setTimeout(() => {
+                    if (currentQuizIndex < QUIZ_DATA.length - 1) {
+                        currentQuizIndex++;
+                        renderQuiz();
+                    } else {
+                        nextStage();
+                    }
+                }, 800);
+            } else {
+                btn.classList.remove('border-slate-100');
+                btn.classList.add('bg-red-50', 'border-red-500', 'text-red-700', 'shake');
+                btn.innerHTML += ' <span>✕</span>';
+                document.getElementById('quiz-feedback').classList.remove('hidden');
+                
+                setTimeout(() => {
+                    btn.classList.remove('shake');
+                    for(let b of allBtns) b.disabled = false;
+                    // 重置樣式
+                    btn.classList.remove('bg-red-50', 'border-red-500', 'text-red-700');
+                    btn.classList.add('border-slate-100');
+                    btn.innerText = selected; 
+                }, 1000);
+            }
+        }
+
+        // --- Stage 2: Passcode ---
+        function updatePasscodeDisplay() {
+            const dots = document.getElementById('passcode-display').children;
+            for (let i = 0; i < 4; i++) {
+                if (i < passcode.length) {
+                    dots[i].innerText = '❤';
+                    dots[i].classList.remove('opacity-30');
+                } else {
+                    dots[i].innerText = '';
+                    dots[i].classList.add('opacity-30');
+                }
+            }
+        }
+
+        function addPasscode(num) {
+            if (passcode.length < 4) {
+                passcode += num;
+                updatePasscodeDisplay();
+                document.getElementById('passcode-error').classList.add('hidden');
+                
+                if (passcode.length === 4) {
+                    if (passcode === SECRET_CODE) {
+                        setTimeout(nextStage, 300);
+                    } else {
+                        document.getElementById('passcode-error').classList.remove('hidden');
+                        setTimeout(() => {
+                            passcode = "";
+                            updatePasscodeDisplay();
+                        }, 800);
+                    }
+                }
+            }
+        }
+
+        function deletePasscode() {
+            passcode = passcode.slice(0, -1);
+            updatePasscodeDisplay();
+        }
+
+        // --- Stage 3: Memory Game ---
+        function initMemoryGame() {
+            // SVG icons paths
+            const icons = [
+                '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>', // Heart
+                '<path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>', // Star
+                '<path d="M20 12a8 8 0 11-16 0 8 8 0 0116 0z"/><path d="M9 12l2 2 4-4"/>', // Check(Smile-ish) or Gift
+                '<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>' // Box
+            ];
+            
+            let deck = [...icons, ...icons];
+            deck.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('memory-grid');
+            grid.innerHTML = '';
+            
+            deck.forEach((iconPath, index) => {
+                const card = document.createElement('div');
+                card.className = 'card relative aspect-square cursor-pointer perspective-1000';
+                card.innerHTML = `
+                    <div class="card-inner w-full h-full relative transform-style-3d duration-500">
+                        <div class="absolute w-full h-full bg-white shadow-md border-2 border-pink-50 rounded-xl flex items-center justify-center backface-hidden">
+                            <span class="text-pink-200 text-xl">?</span>
+                        </div>
+                        <div class="absolute w-full h-full bg-gradient-to-br from-pink-400 to-rose-400 rounded-xl flex items-center justify-center rotate-y-180 backface-hidden">
+                            <svg class="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">${iconPath}</svg>
+                        </div>
+                    </div>
+                `;
+                
+                card.onclick = () => flipCard(card, iconPath);
+                grid.appendChild(card);
+            });
+        }
+
+        function flipCard(card, icon) {
+            if (lockBoard || card.classList.contains('flipped')) return;
+
+            card.classList.add('flipped');
+            flippedCards.push({ card, icon });
+
+            if (flippedCards.length === 2) {
+                lockBoard = true;
+                checkMatch();
+            }
+        }
+
+        function checkMatch() {
+            const [first, second] = flippedCards;
+            const isMatch = first.icon === second.icon;
+
+            if (isMatch) {
+                flippedCards = [];
+                lockBoard = false;
+                // Check win
+                const allFlipped = document.querySelectorAll('.card.flipped').length;
+                if (allFlipped === 8) {
+                    setTimeout(nextStage, 1000);
+                }
+            } else {
+                setTimeout(() => {
+                    first.card.classList.remove('flipped');
+                    second.card.classList.remove('flipped');
+                    flippedCards = [];
+                    lockBoard = false;
+                }, 1000);
+            }
+        }
+
+        // --- Confetti Effect ---
+        function startConfetti() {
+            const container = document.getElementById('confetti-container');
+            container.classList.remove('hidden');
+            const colors = ['#FFC0CB', '#FF69B4', '#FFD700', '#87CEEB'];
+            
+            for (let i = 0; i < 50; i++) {
+                const el = document.createElement('div');
+                el.className = 'absolute w-2 h-2 rounded-full';
+                el.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                el.style.left = Math.random() * 100 + '%';
+                el.style.top = -10 + 'px';
+                el.style.animation = `fall ${Math.random() * 3 + 2}s linear infinite`;
+                el.style.animationDelay = Math.random() * 2 + 's';
+                container.appendChild(el);
+            }
+        }
+
+        // Add CSS for confetti
+        const styleSheet = document.createElement("style");
+        styleSheet.innerText = `
+            @keyframes fall {
+                to { transform: translateY(100vh) rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+    </script>
+</body>
+</html>
